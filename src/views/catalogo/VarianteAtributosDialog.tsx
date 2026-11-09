@@ -38,8 +38,6 @@ export default function VarianteAtributosDialog({ variante, onClose, onChanged }
         setValores(map);
     }, [current]);
 
-    console.log({current})
-
     const asociados = current.atributos ?? [];
     const disponibles = (catalogo ?? []).filter(
         (a) => a.activo && !asociados.some((x) => x.idAtributo === a.id),

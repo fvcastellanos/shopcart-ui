@@ -3,12 +3,15 @@ import { Formik } from "formik";
 import {
     Box,
     Button,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControlLabel,
     MenuItem,
     Stack,
+    TablePagination,
     TextField,
     Typography,
 } from "@mui/material";
@@ -28,14 +31,33 @@ export default function ProductosTab() {
     const canManage = isStaff(rol);
 
     const [busqueda, setBusqueda] = useState("");
+    const [categoria, setCategoria] = useState("");
+    const [precioMin, setPrecioMin] = useState("");
+    const [precioMax, setPrecioMax] = useState("");
+    const [soloDisponibles, setSoloDisponibles] = useState(false);
+    const [ordenarPor, setOrdenarPor] = useState("Nombre");
+    const [direccion, setDireccion] = useState<"ASC" | "DESC">("ASC");
+    const [pagina, setPagina] = useState(1);
+    const [tamanoPagina, setTamanoPagina] = useState(10);
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<ProductoDto | null>(null);
     const [formKey, setFormKey] = useState(0);
 
     const { data: categorias } = useFetch<CategoriaDto[]>(() => apiClient.get("/categorias"), []);
     const { data, loading, error, reload } = useFetch<Paginated<ProductoDto>>(
-        () => apiClient.get("/productos", { busqueda, tamanoPagina: 100 }),
-        [busqueda]
+        () =>
+            apiClient.get("/productos", {
+                busqueda,
+                categoria: categoria || undefined,
+                precioMin: precioMin || undefined,
+                precioMax: precioMax || undefined,
+                soloDisponibles: soloDisponibles || undefined,
+                ordenarPor,
+                direccion,
+                pagina,
+                tamanoPagina,
+            }),
+        [busqueda, categoria, precioMin, precioMax, soloDisponibles, ordenarPor, direccion, pagina, tamanoPagina]
     );
 
     const openCreate = () => {
@@ -58,6 +80,17 @@ export default function ProductosTab() {
         } catch (err) {
             window.alert(getErrorMessage(err));
         }
+    };
+
+    const clearFilters = () => {
+        setBusqueda("");
+        setCategoria("");
+        setPrecioMin("");
+        setPrecioMax("");
+        setSoloDisponibles(false);
+        setOrdenarPor("Nombre");
+        setDireccion("ASC");
+        setPagina(1);
     };
 
     const columns: Column<ProductoDto>[] = [
@@ -98,7 +131,7 @@ export default function ProductosTab() {
 
     return (
         <Box>
-            <Stack direction="row" spacing={2} sx={{ mb: 2, alignItems: "center" }}>
+            <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: "wrap", alignItems: "center" }} useFlexGap>
                 {canManage ? (
                     <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
                         Nuevo producto
@@ -108,9 +141,96 @@ export default function ProductosTab() {
                     size="small"
                     label="Buscar"
                     value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    sx={{ width: 300 }}
+                    onChange={(e) => {
+                        setBusqueda(e.target.value);
+                        setPagina(1);
+                    }}
+                    sx={{ width: 200 }}
                 />
+                <TextField
+                    select
+                    size="small"
+                    label="Categoría"
+                    value={categoria}
+                    onChange={(e) => {
+                        setCategoria(e.target.value);
+                        setPagina(1);
+                    }}
+                    sx={{ minWidth: 160 }}
+                >
+                    <MenuItem value="">Todas</MenuItem>
+                    {(categorias ?? []).map((c) => (
+                        <MenuItem key={c.id} value={String(c.id)}>
+                            {c.nombre}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <TextField
+                    size="small"
+                    type="number"
+                    label="Precio mín"
+                    value={precioMin}
+                    onChange={(e) => {
+                        setPrecioMin(e.target.value);
+                        setPagina(1);
+                    }}
+                    sx={{ width: 120 }}
+                />
+                <TextField
+                    size="small"
+                    type="number"
+                    label="Precio máx"
+                    value={precioMax}
+                    onChange={(e) => {
+                        setPrecioMax(e.target.value);
+                        setPagina(1);
+                    }}
+                    sx={{ width: 120 }}
+                />
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={soloDisponibles}
+                            onChange={(e) => {
+                                setSoloDisponibles(e.target.checked);
+                                setPagina(1);
+                            }}
+                        />
+                    }
+                    label="Solo disponibles"
+                />
+                <TextField
+                    select
+                    size="small"
+                    label="Ordenar por"
+                    value={ordenarPor}
+                    onChange={(e) => {
+                        setOrdenarPor(e.target.value);
+                        setPagina(1);
+                    }}
+                    sx={{ minWidth: 140 }}
+                >
+                    <MenuItem value="Nombre">Nombre</MenuItem>
+                    <MenuItem value="Precio">Precio</MenuItem>
+                    <MenuItem value="Recientes">Recientes</MenuItem>
+                </TextField>
+                <TextField
+                    select
+                    size="small"
+                    label="Dirección"
+                    value={direccion}
+                    onChange={(e) => {
+                        setDireccion(e.target.value as "ASC" | "DESC");
+                        setPagina(1);
+                    }}
+                    sx={{ width: 110 }}
+                >
+                    <MenuItem value="ASC">Asc</MenuItem>
+                    <MenuItem value="DESC">Desc</MenuItem>
+                </TextField>
+                <Button size="small" onClick={clearFilters}>
+                    Limpiar
+                </Button>
             </Stack>
 
             <SimpleTable
@@ -119,6 +239,21 @@ export default function ProductosTab() {
                 loading={loading}
                 error={error}
                 rowKey={(p) => p.id}
+            />
+
+            <TablePagination
+                component="div"
+                count={data?.total ?? 0}
+                page={pagina - 1}
+                onPageChange={(_e, newPage) => setPagina(newPage + 1)}
+                rowsPerPage={tamanoPagina}
+                onRowsPerPageChange={(e) => {
+                    setTamanoPagina(Number(e.target.value));
+                    setPagina(1);
+                }}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+                labelRowsPerPage="Filas por página"
+                labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
             />
 
             <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
