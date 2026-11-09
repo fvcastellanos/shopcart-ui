@@ -22,7 +22,7 @@ import type {
 export default function Dashboard() {
     const [fechaDesde, setFechaDesde] = useState(daysAgoIso(30));
     const [fechaHasta, setFechaHasta] = useState(todayIso());
-    const [agruparPor, setAgruparPor] = useState("dia");
+    const [agruparPor, setAgruparPor] = useState("Dia");
     const [top, setTop] = useState(10);
 
     const desde = toIsoDay(fechaDesde, false);
@@ -92,9 +92,9 @@ export default function Dashboard() {
                     size="small"
                     sx={{ minWidth: 140 }}
                 >
-                    <MenuItem value="dia">Día</MenuItem>
-                    <MenuItem value="semana">Semana</MenuItem>
-                    <MenuItem value="mes">Mes</MenuItem>
+                    <MenuItem value="Dia">Día</MenuItem>
+                    <MenuItem value="Semana">Semana</MenuItem>
+                    <MenuItem value="Mes">Mes</MenuItem>
                 </TextField>
                 <TextField
                     type="number"

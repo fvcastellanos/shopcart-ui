@@ -39,10 +39,10 @@ const NAV_ITEMS = [
     { label: "Dashboard", path: "/dashboard", icon: <DashboardIcon />, roles: [ROL.ADMINISTRADOR] },
     { label: "Catálogo", path: "/catalogo", icon: <CategoryIcon />, roles: [ROL.ADMINISTRADOR] },
     { label: "Inventario", path: "/inventario", icon: <InventoryIcon />, roles: [ROL.ADMINISTRADOR, ROL.OPERADOR] },
-    { label: "Carrito", path: "/carrito", icon: <ShoppingCartIcon />, roles: [ROL.ADMINISTRADOR, ROL.CLIENTE] },
+    { label: "Carrito", path: "/carrito", icon: <ShoppingCartIcon />, roles: [ROL.CLIENTE] },
     { label: "Pedidos", path: "/pedidos", icon: <ReceiptLongIcon />, roles: [ROL.ADMINISTRADOR, ROL.CLIENTE, ROL.OPERADOR] },
     { label: "Cupones", path: "/cupones", icon: <LocalOfferIcon />, roles: [ROL.ADMINISTRADOR] },
-    { label: "Direcciones", path: "/direcciones", icon: <LocationOnIcon />, roles: [ROL.ADMINISTRADOR, ROL.CLIENTE] },
+    { label: "Direcciones", path: "/direcciones", icon: <LocationOnIcon />, roles: [ROL.CLIENTE] },
     { label: "Bitácora", path: "/bitacora", icon: <HistoryIcon />, roles: [ROL.ADMINISTRADOR] },
 ];
 

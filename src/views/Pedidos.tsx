@@ -25,7 +25,7 @@ import type {
 import { isStaff } from "../client/roles";
 import { useAuthStore } from "../storage/AppState";
 
-const ESTADOS = ["PENDIENTE", "PAGADO", "EN_PREPARACION", "EN_CAMINO", "ENTREGADO", "CANCELADO"];
+const ESTADOS = ['Confirmado', 'EnPreparacion', 'Despachado', 'Entregado', 'Cancelado'];
 
 export default function Pedidos() {
     const rol = useAuthStore((state) => state.user?.rol);
@@ -72,12 +72,12 @@ export default function Pedidos() {
         }
     };
 
-    const changeEstado = async (id: number) => {
-        if (!nuevoEstado) return;
+    const changeEstado = async (id: number, estadoNuevo: string) => {
+        if (!estadoNuevo) return;
         setSaving(true);
         setActionError(null);
         try {
-            await apiClient.patch(`/pedidos/${id}/estado`, { estadoNuevo: nuevoEstado });
+            await apiClient.patch(`/pedidos/${id}/estado`, { estadoNuevo });
             setNuevoEstado("");
             await openDetail(id);
             reload();
@@ -86,6 +86,15 @@ export default function Pedidos() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const canCancel = (estado: string) => estado === "Confirmado" || estado === "EnPreparacion";
+
+    const canDevolver = (estado: string) => estado === "Entregado";
+
+    const cancelarPedido = async (id: number) => {
+        if (!window.confirm("¿Seguro que deseas cancelar este pedido?")) return;
+        await changeEstado(id, "Cancelado");
     };
 
     const openDevolucion = () => {
@@ -256,13 +265,38 @@ export default function Pedidos() {
                                     <Button
                                         variant="contained"
                                         disabled={!nuevoEstado || saving}
-                                        onClick={() => changeEstado(detail.pedido.id)}
+                                        onClick={() => changeEstado(detail.pedido.id, nuevoEstado)}
                                     >
                                         Cambiar estado
                                     </Button>
                                     <Button variant="outlined" color="warning" onClick={openDevolucion}>
                                         Registrar devolución
                                     </Button>
+                                </Stack>
+                            ) : null}
+
+                            {!staff && (canCancel(detail.pedido.estado) || canDevolver(detail.pedido.estado)) ? (
+                                <Stack direction="row" spacing={2} sx={{ mb: 2, alignItems: "center" }}>
+                                    {canCancel(detail.pedido.estado) ? (
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
+                                            disabled={saving}
+                                            onClick={() => cancelarPedido(detail.pedido.id)}
+                                        >
+                                            {saving ? "Cancelando…" : "Cancelar pedido"}
+                                        </Button>
+                                    ) : null}
+                                    {canDevolver(detail.pedido.estado) ? (
+                                        <Button
+                                            variant="outlined"
+                                            color="warning"
+                                            disabled={saving}
+                                            onClick={openDevolucion}
+                                        >
+                                            Registrar devolución
+                                        </Button>
+                                    ) : null}
                                 </Stack>
                             ) : null}
 

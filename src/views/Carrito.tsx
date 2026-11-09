@@ -59,7 +59,7 @@ export default function Carrito() {
         if (cartId !== null) return;
         let cancelled = false;
         apiClient
-            .post<CarritoDto>("/carrito")
+            .post<CarritoDto>("/carrito", {})
             .then((c) => {
                 if (cancelled) return;
                 localStorage.setItem(CART_KEY, String(c.id));
